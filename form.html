@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Personal Details</title>
+    
+    
+<title>form</title>
+<link rel="stylesheet" href="style.css">
+
+</head>
+<body>
+
+    <h1>Personal Details
+    </h1>
+<nav>
+<a href="index.html">Home</a>
+<a href="about.html">About</a>
+<a href="skills.html">Skills</a>
+<a href="projects.html">Projects</a>
+<a href="contact.html">Contact</a>
+<a href="form.html">Form</a>
+</nav>
+
+    <form id="userForm">
+        <label>Name:</label>
+        <input type="text" id="name" required><br><br>
+
+        <label>Password:</label>
+        <input type="password" id="password" required><br><br>
+
+        <label>Email ID:</label>
+        <input type="text" id="email" required><br><br>
+
+        <button type="submit">Submit</button>
+    </form>
+
+    <br>
+
+    <div id="dataContainer"></div>
+
+    <p id="status"></p>
+
+    <script type="module">
+
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-analytics.js";
+        import {
+            getDatabase,
+            ref,
+            push,
+            set,
+            get
+        } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAip44GfwJqnsv3OKO8Ua454EsPvsl7aQA",
+            authDomain: "form-e7b78.firebaseapp.com",
+            projectId: "form-e7b78",
+            databaseURL: "https://form-e7b78-default-rtdb.firebaseio.com",
+            storageBucket: "form-e7b78.firebasestorage.app",
+            messagingSenderId: "1094829093491",
+            appId: "1:1094829093491:web:7506790199a20c2fa7b006",
+            
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        const database = getDatabase(app);
+
+        const form = document.getElementById("userForm");
+        const status = document.getElementById("status");
+
+        // Save Data
+        form.addEventListener("submit", (e) => {
+            e.preventDefault();
+
+            const name = document.getElementById("name").value;
+            const password = document.getElementById("password").value;
+            const EMAIL = document.getElementById("email").value;
+            const userRef = push(ref(database, "users"));
+
+            set(userRef, {
+                name: name,
+                password: password,
+                email: EMAIL
+            })
+            .then(() => {
+                status.innerText = "Data saved successfully!";
+                form.reset();
+            })
+            .catch((error) => {
+                status.innerText = error.message;
+            });
+        });
+
+        // View Data
+        document.getElementById("viewBtn").addEventListener("click", () => {
+
+            const dataContainer = document.getElementById("dataContainer");
+
+            get(ref(database, "users"))
+            .then((snapshot) => {
+
+                if (snapshot.exists()) {
+
+                    let html = "<table border='1' cellpadding='10'>";
+                    html += "<tr><th>Name</th><th>Password</th><th>Email</th></tr>";
+
+                    snapshot.forEach((childSnapshot) => {
+                        const data = childSnapshot.val();
+
+                        html += `
+                            <tr>
+                                <td>${data.name}</td>
+                                <td>${data.password}</td>
+                                <td>${data.email}</td>
+                            </tr>
+                        `;
+                    });
+
+                    html += "</table>";
+                    dataContainer.innerHTML = html;
+
+                } else {
+                    dataContainer.innerHTML = "No data found.";
+                }
+
+            })
+            .catch((error) => {
+                console.log(error);
+            });
+
+        });
+
+    </script>
+
+</body>
+</html>
